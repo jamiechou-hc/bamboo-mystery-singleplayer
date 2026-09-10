@@ -91,14 +91,164 @@ textarea{min-height:100px;resize:vertical}
 hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
 .footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px}
 @media(max-width:580px){.grid{grid-template-columns:1fr}.cover,.sheet{padding:17px}.personrow{grid-template-columns:72px 1fr 36px}}
+
+/* ===== 升級版：沉浸視覺與動畫 ===== */
+:root{
+  --night:#18251c;
+  --fog:#dfe6df;
+  --paper-edge:#d6c6a5;
+}
+body{
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,.86), rgba(242,237,223,.94) 42%, rgba(227,233,226,.94) 100%),
+    repeating-linear-gradient(90deg,transparent 0 46px,#314d3914 47px 50px,transparent 51px 92px);
+  overflow-x:hidden;
+}
+.bamboo-layer{
+  position:fixed; inset:0; z-index:-2; pointer-events:none; overflow:hidden;
+}
+.bamboo{
+  position:absolute; bottom:-8%; width:18px; height:115%;
+  background:linear-gradient(90deg,#21372a,#49624f 50%,#294331);
+  opacity:.18; border-radius:12px;
+  transform-origin:bottom center;
+  animation:sway 6s ease-in-out infinite alternate;
+}
+.bamboo:before,.bamboo:after{
+  content:""; position:absolute; left:-1px; width:20px; height:3px; background:#1d3024; opacity:.45;
+}
+.bamboo:before{top:28%}.bamboo:after{top:62%}
+.bamboo:nth-child(1){left:3%;animation-delay:-1s}
+.bamboo:nth-child(2){left:11%;width:12px;animation-delay:-3s}
+.bamboo:nth-child(3){right:9%;width:14px;animation-delay:-2s}
+.bamboo:nth-child(4){right:2%;animation-delay:-4s}
+@keyframes sway{from{transform:rotate(-1deg)}to{transform:rotate(1.4deg)}}
+
+.cover,.sheet{
+  transform-origin:top center;
+  animation:paperEnter .55s cubic-bezier(.2,.75,.25,1) both;
+}
+@keyframes paperEnter{
+  from{opacity:0; transform:translateY(18px) scale(.985)}
+  to{opacity:1; transform:none}
+}
+.sheet.reveal{
+  animation:unlockReveal .75s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes unlockReveal{
+  0%{opacity:0; transform:translateY(28px) rotateX(-7deg)}
+  100%{opacity:1; transform:none}
+}
+
+.screenFlash{
+  position:fixed; inset:0; pointer-events:none; z-index:999;
+  background:rgba(123,48,48,.16);
+  opacity:0;
+}
+.screenFlash.play{animation:flash .5s ease}
+@keyframes flash{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
+
+.stamp.animate{
+  animation:stampHit .45s cubic-bezier(.2,1.6,.4,1);
+}
+@keyframes stampHit{
+  0%{opacity:0; transform:scale(1.8) rotate(-12deg)}
+  75%{opacity:1; transform:scale(.92) rotate(-2deg)}
+  100%{transform:scale(1) rotate(-2deg)}
+}
+
+.lockBadge{
+  display:inline-flex; align-items:center; gap:6px; padding:4px 9px;
+  border:1px solid var(--line); border-radius:999px; background:#f7f2e8; color:var(--muted);
+  font-size:.82rem; margin-bottom:8px;
+}
+.caseHeader{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:6px;
+}
+.caseNo{font-size:.82rem; color:var(--muted); letter-spacing:.08em}
+.chapterTag{
+  font-size:.84rem; font-weight:800; color:var(--red);
+}
+.unlockLine{
+  display:flex; align-items:center; gap:8px; margin-top:14px; color:var(--muted); font-size:.9rem;
+}
+.unlockLine:before{
+  content:""; flex:1; border-top:1px dashed var(--line);
+}
+.unlockLine:after{
+  content:""; flex:1; border-top:1px dashed var(--line);
+}
+.mysteryPulse{animation:mysteryPulse 1.8s ease-in-out infinite}
+@keyframes mysteryPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(123,48,48,0)}
+  50%{box-shadow:0 0 0 8px rgba(123,48,48,.06)}
+}
+.progress{
+  border:1px solid rgba(203,189,156,.7);
+  box-shadow:0 5px 18px rgba(0,0,0,.05);
+}
+.progressline>div{
+  position:relative;
+}
+.progressline>div:after{
+  content:""; position:absolute; right:0; top:0; width:22px; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.5));
+}
+
+.audioBtn{
+  min-height:auto; padding:6px 10px; border-radius:999px; font-size:.82rem;
+  background:#ece4d5; color:var(--ink); box-shadow:none; border:1px solid var(--line);
+}
+.topTools{
+  display:flex; justify-content:flex-end; margin-bottom:8px;
+}
+.storyBeat{
+  font-size:1.05rem; text-align:center; letter-spacing:.05em; padding:16px 10px; color:#314d39;
+}
+.storyBeat strong{color:var(--red)}
+
+.verdictGrid{
+  display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:12px 0;
+}
+.verdictCard{
+  border:1px solid var(--line); background:#fffdfa; border-radius:12px; padding:14px;
+}
+.verdictCard b{display:block;color:var(--bamboo);margin-bottom:5px}
+
+.credLegend{
+  display:flex; justify-content:space-between; font-size:.78rem; color:var(--muted); margin-top:-5px
+}
+.endQuote{
+  font-size:clamp(1.25rem,4vw,1.8rem);
+  line-height:1.65; color:var(--bamboo); font-weight:800; margin:18px 0;
+}
+.restartHint{
+  margin-top:14px; font-size:.86rem; color:var(--muted)
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@media(max-width:580px){
+  .verdictGrid{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
+
+<div class="bamboo-layer" aria-hidden="true">
+  <div class="bamboo"></div><div class="bamboo"></div><div class="bamboo"></div><div class="bamboo"></div>
+</div>
+<div id="screenFlash" class="screenFlash" aria-hidden="true"></div>
+
 <div class="app">
+  <div class="topTools">
+    <button id="audioBtn" class="audioBtn" type="button" aria-pressed="false">♪ 環境音：關</button>
+  </div>
   <section id="cover" class="cover">
     <div class="seal">山科特別調查卷宗</div>
     <h1>竹藪迷案</h1>
-    <p><b>真相不存在的卷宗</b></p>
+    <p><b>真相不存在的卷宗</b></p><div class="unlockLine">CASE 07｜山科竹林</div><p class="storyBeat">你要找的，也許不是兇手。<br><strong>而是「什麼值得相信」。</strong></p>
     <p class="small">單人劇情推理遊戲</p>
     <input id="codename" maxlength="20" placeholder="輸入調查官代號" style="margin:8px 0">
     <h3>你認為查案最重要的是什麼？</h3>
@@ -117,7 +267,7 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   </div>
 
   <section id="prologue" class="sheet hidden">
-    <div class="seal">序章</div>
+    <div class="caseHeader"><div><div class="seal">序章</div><div class="caseNo">CASE 07-A</div></div><div class="chapterTag">任命</div></div>
     <h2>任命書</h2>
     <div class="casefile">
       <p>山科竹林發現一名男子死亡。</p>
@@ -130,7 +280,8 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   </section>
 
   <section id="act1" class="sheet hidden">
-    <div class="seal">第一幕</div>
+    <div class="caseHeader"><div><div class="seal">第一幕</div><div class="caseNo">CASE 07-B</div></div><div class="chapterTag">現場調查</div></div>
+    <div class="lockBadge">🔓 已解鎖</div>
     <h2>現場｜你確定自己知道什麼？</h2>
     <details class="quote"><summary><b>樵夫</b></summary><p>我在竹林中發現武弘。他已死亡。現場附近有繩子、梳子，草葉凌亂。</p></details>
     <details class="quote"><summary><b>行腳僧</b></summary><p>前一日晌午，我看見武弘與真砂同行。武弘當時帶著刀、弓與箭。</p></details>
@@ -158,7 +309,8 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   </section>
 
   <section id="act2" class="sheet hidden">
-    <div class="seal">第二幕</div>
+    <div class="caseHeader"><div><div class="seal">第二幕</div><div class="caseNo">CASE 07-C</div></div><div class="chapterTag">證詞比對</div></div>
+    <div class="lockBadge">🔓 已解鎖</div>
     <h2>自白｜三個人都提出了自己的版本</h2>
     <div class="quote"><span class="pill">多襄丸</span><b>版本 A</b><p>他承認自己造成武弘死亡，並把過程描述成一場正面、勇武的對決。</p></div>
     <h3>他既然承認，還可能不完全誠實嗎？</h3>
@@ -183,7 +335,8 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   </section>
 
   <section id="act3" class="sheet hidden">
-    <div class="seal">第三幕</div>
+    <div class="caseHeader"><div><div class="seal">第三幕</div><div class="caseNo">CASE 07-D</div></div><div class="chapterTag">物證分析</div></div>
+    <div class="lockBadge">🔓 已解鎖</div>
     <h2>物證｜證據會自己說話嗎？</h2>
     <p>點開四份調查資料。</p>
     <div class="grid">
@@ -214,9 +367,14 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   </section>
 
   <section id="act4" class="sheet hidden">
-    <div class="seal">第四幕</div>
+    <div class="caseHeader"><div><div class="seal">第四幕</div><div class="caseNo">CASE 07-E</div></div><div class="chapterTag">最終判決</div></div>
+    <div class="lockBadge">🔓 已解鎖</div>
     <h2>審判｜請為你的判斷負責</h2>
     <p>遊戲不會公布「標準兇手」。你的任務是提出目前最能被證據支持的判斷。</p>
+    <div class="verdictGrid">
+      <div class="verdictCard"><b>你要做的</b>選出目前最合理的版本，並提出可被檢驗的理由。</div>
+      <div class="verdictCard"><b>你不需要做的</b>猜中老師心中的答案，或假裝所有疑點都已消失。</div>
+    </div>
     <select id="verdict">
       <option value="">請選擇</option>
       <option>A. 多襄丸造成武弘死亡</option>
@@ -236,7 +394,8 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   </section>
 
   <section id="twist" class="sheet hidden">
-    <div class="seal">未登錄卷宗</div>
+    <div class="caseHeader"><div><div class="seal">未登錄卷宗</div><div class="caseNo">CASE 07-X</div></div><div class="chapterTag">隱藏線索</div></div>
+    <div class="lockBadge mysteryPulse">⚠ 未登錄資料</div>
     <h2>樵夫的沉默</h2>
     <div class="note">
       重新檢查：武弘的版本讓「小刀」留在現場成為可能；然而最早發現現場的樵夫，卻沒有提到這件物品。
@@ -255,7 +414,7 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
   </section>
 
   <section id="ending" class="sheet hidden">
-    <div class="seal">終章</div>
+    <div class="caseHeader"><div><div class="seal">終章</div><div class="caseNo">CASE 07-F</div></div><div class="chapterTag">再審</div></div>
     <h2>調查官手記</h2>
     <div id="mirror" class="casefile"></div>
     <h3>經過這次調查，你還同意遊戲開始時的自己嗎？</h3>
@@ -266,8 +425,8 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
 
   <section id="certificate" class="cover hidden">
     <div class="seal">案件結束</div>
-    <h2>如果每個人都說了「自己的真話」，真相在哪裡？</h2>
-    <p>你完成的不是「猜中兇手」，而是一場關於證據、敘事與相信的調查。</p>
+    <div class="endQuote">如果每個人都說了「自己的真話」，<br>真相在哪裡？</div>
+    <p>你完成的不是「猜中兇手」，而是一場關於證據、敘事與相信的調查。</p><p class="restartHint">真正的結案，不是停止懷疑，而是知道自己的判斷從哪裡來。</p>
     <div class="row" style="justify-content:center">
       <button id="exportBtn" class="secondary">匯出調查紀錄</button>
       <button id="restartBtn" class="secondary">重新開始</button>
@@ -282,8 +441,56 @@ hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
 "use strict";
 const $=id=>document.getElementById(id);
 const state=JSON.parse(localStorage.getItem("inAGroveSolo")||'{"stage":0,"answers":{},"credibility":{}}');
+
+let audioCtx=null, ambientNodes=[];
+function flash(){
+  const f=$("screenFlash");
+  f.classList.remove("play"); void f.offsetWidth; f.classList.add("play");
+}
+function animateStamp(scope){
+  setTimeout(()=>{
+    const s=scope.querySelector(".stamp");
+    if(s){s.classList.remove("animate"); void s.offsetWidth; s.classList.add("animate")}
+  },40);
+}
+function playTone(freq=180,dur=.16,type="sine",gain=.025){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=type;o.frequency.value=freq;g.gain.value=gain;
+    o.connect(g);g.connect(audioCtx.destination);
+    const now=audioCtx.currentTime;
+    g.gain.setValueAtTime(gain,now);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+    o.start(now);o.stop(now+dur);
+  }catch(e){}
+}
+function startAmbient(){
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==="suspended") audioCtx.resume();
+    stopAmbient();
+    const osc=audioCtx.createOscillator(), gain=audioCtx.createGain(), lfo=audioCtx.createOscillator(), lfoGain=audioCtx.createGain();
+    osc.type="sine"; osc.frequency.value=96;
+    gain.gain.value=.007;
+    lfo.type="sine"; lfo.frequency.value=.13; lfoGain.gain.value=.003;
+    lfo.connect(lfoGain);lfoGain.connect(gain.gain);osc.connect(gain);gain.connect(audioCtx.destination);
+    osc.start();lfo.start();ambientNodes=[osc,lfo,gain,lfoGain];
+  }catch(e){}
+}
+function stopAmbient(){
+  ambientNodes.forEach(n=>{try{if(n.stop)n.stop()}catch(e){}});
+  ambientNodes=[];
+}
+
 function save(){localStorage.setItem("inAGroveSolo",JSON.stringify(state))}
-function show(id){$(id).classList.remove("hidden");$(id).scrollIntoView({behavior:"smooth",block:"start"})}
+function show(id){
+  const el=$(id);
+  el.classList.remove("hidden");
+  el.classList.remove("reveal"); void el.offsetWidth; el.classList.add("reveal");
+  el.scrollIntoView({behavior:"smooth",block:"start"});
+  playTone(id==="twist"?120:190,.18,id==="twist"?"sawtooth":"sine",id==="twist"?.02:.018);
+  if(id==="twist") flash();
+}
 function setStage(n,name){
   state.stage=Math.max(state.stage,n); save();
   $("bar").style.width=(Math.min(n,7)/7*100)+"%";
@@ -291,6 +498,14 @@ function setStage(n,name){
 }
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function lines(s){return s.split(/\n+/).map(x=>x.trim()).filter(Boolean).length}
+
+let ambientOn=false;
+$("audioBtn").addEventListener("click",()=>{
+  ambientOn=!ambientOn;
+  $("audioBtn").setAttribute("aria-pressed",String(ambientOn));
+  $("audioBtn").textContent=ambientOn?"♪ 環境音：開":"♪ 環境音：關";
+  if(ambientOn){startAmbient();playTone(220,.12,"sine",.02)}else{stopAmbient()}
+});
 
 $("startBtn").addEventListener("click",()=>{
   const name=$("codename").value.trim(),belief=$("belief").value;
@@ -308,7 +523,7 @@ $("check1").addEventListener("click",()=>{
   if(wrong){$("fb1").innerHTML='<div class="feedback warn">有 '+wrong+' 項需要再想想。尤其注意：「有人這樣說」不等於「事情已被客觀證實」。</div>';return}
   state.answers.act1="完成事實／證詞／推論分類";save();
   $("fb1").innerHTML='<div class="feedback"><span class="stamp">事實 ≠ 證詞</span><br>第一幕完成。你開始知道「讀到一句話」和「證實一件事」並不相同。</div>';
-  setTimeout(()=>{setStage(3,"第二幕");show("act2")},650);
+  animateStamp($("act1")); playTone(240,.18,"triangle",.025); setTimeout(()=>{setStage(3,"第二幕");show("act2")},650);
 });
 
 $("check2").addEventListener("click",()=>{
@@ -321,11 +536,11 @@ $("check2").addEventListener("click",()=>{
   if(self.length<10){alert("請再多寫一點多襄丸可能如何塑造自己的形象。");return}
   state.answers.act2={confess:confess.value,selfImage:self};save();
   $("fb2").innerHTML='<div class="feedback"><span class="stamp">自白 ≠ 真相</span><br>一個人可以承認某件事，同時仍重新安排故事中的自己。</div>';
-  setTimeout(()=>{setStage(4,"第三幕");show("act3")},650);
+  animateStamp($("act2")); playTone(250,.18,"triangle",.025); setTimeout(()=>{setStage(4,"第三幕");show("act3")},650);
 });
 
 document.querySelectorAll(".card").forEach(card=>{
-  const flip=()=>{card.classList.toggle("open");card.querySelector(".inner").classList.toggle("hidden")};
+  const flip=()=>{card.classList.toggle("open");card.querySelector(".inner").classList.toggle("hidden");playTone(card.classList.contains("open")?210:160,.08,"sine",.012)};
   card.addEventListener("click",flip);
   card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip()}});
 });
@@ -337,7 +552,7 @@ $("check3").addEventListener("click",()=>{
   if(knife.length<8){alert("請留下你對小刀去向的推測或無法判定的理由。");return}
   state.answers.act3={knife};save();
   $("fb3").innerHTML='<div class="feedback"><span class="stamp">證據 ≠ 故事</span><br>物證能限制故事，但不能替我們自動補完故事。</div>';
-  setTimeout(()=>{show("credibility")},650);
+  animateStamp($("act3")); playTone(260,.18,"triangle",.025); setTimeout(()=>{show("credibility")},650);
 });
 
 document.querySelectorAll(".cred").forEach(r=>{

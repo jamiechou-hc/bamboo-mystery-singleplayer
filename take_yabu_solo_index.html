@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>竹藪迷案｜單人推理遊戲</title>
+<style>
+:root{
+  --ink:#242720; --muted:#6c7168; --paper:#fffaf0; --paper2:#f2ead7;
+  --bamboo:#314d39; --bamboo2:#657c68; --red:#7b3030; --gold:#a78348;
+  --line:#cbbd9c; --mist:#e9eee8; --shadow:#0000001c;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; color:var(--ink);
+  font-family:"Noto Serif TC","PingFang TC","Microsoft JhengHei",serif;
+  line-height:1.75;
+  background:
+    linear-gradient(rgba(242,237,223,.94),rgba(242,237,223,.94)),
+    repeating-linear-gradient(90deg,transparent 0 46px,#314d3914 47px 50px,transparent 51px 92px);
+}
+body:before,body:after{
+  content:"";position:fixed;z-index:-1;top:0;bottom:0;width:17vw;max-width:150px;opacity:.16;
+  background:repeating-linear-gradient(90deg,transparent 0 22px,var(--bamboo) 23px 28px,transparent 29px 47px);
+}
+body:before{left:0} body:after{right:0}
+.app{max-width:820px;margin:auto;padding:12px 12px 60px}
+.cover,.sheet{
+  background:linear-gradient(135deg,#fffaf1,#f3ead4);
+  border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 28px var(--shadow);
+  padding:22px;margin:14px 0;position:relative;overflow:hidden
+}
+.cover{text-align:center;padding:32px 22px}
+.cover:after,.sheet:after{
+  content:"卷";position:absolute;right:10px;top:-12px;font-size:90px;font-weight:900;color:#7b303009;pointer-events:none
+}
+h1,h2,h3{letter-spacing:.04em}
+h1{font-size:clamp(2rem,8vw,3.3rem);color:var(--bamboo);margin:.1em 0}
+h2{color:var(--bamboo);margin-top:0}
+h3{margin-bottom:.4em}
+.seal{display:inline-block;color:var(--red);border:2px solid var(--red);padding:3px 9px;font-weight:800;letter-spacing:.12em;transform:rotate(-2deg)}
+.small{font-size:.9rem;color:var(--muted)}
+.hidden{display:none!important}
+.row{display:flex;gap:9px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+button{
+  min-height:44px;border:0;border-radius:10px;padding:11px 15px;background:var(--bamboo);color:#fff;
+  font:inherit;font-weight:800;cursor:pointer;box-shadow:0 3px 0 #23392a
+}
+button.secondary{background:#ebe3d3;color:var(--ink);border:1px solid var(--line);box-shadow:none}
+button.red{background:var(--red);box-shadow:0 3px 0 #582020}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,textarea,select{
+  width:100%;font:inherit;font-size:16px;padding:12px;border:1px solid #b8aa89;border-radius:10px;background:#fffdfa;color:var(--ink)
+}
+textarea{min-height:100px;resize:vertical}
+.choice{
+  display:block;padding:10px 12px;margin:8px 0;border:1px solid var(--line);border-radius:10px;background:#fffdfa
+}
+.quote,.evidence,.note{
+  padding:13px 14px;margin:10px 0;background:#fffdfa;border-left:4px solid var(--bamboo2);border-radius:8px
+}
+.evidence{border-left-color:var(--gold)}
+.note{border-left-color:var(--red);background:#fff5ed}
+.feedback{padding:11px 13px;margin-top:10px;border-radius:9px;background:#e8f0e8;color:#294931}
+.feedback.warn{background:#fff0df;color:#74471f}
+.progress{
+  position:sticky;top:0;z-index:10;padding:8px 11px;background:#eee6d6e8;backdrop-filter:blur(7px);
+  border-radius:0 0 12px 12px
+}
+.progressline{height:7px;background:#d7ceb9;border-radius:99px;overflow:hidden}
+.progressline>div{height:100%;background:var(--bamboo);width:0;transition:.3s}
+.status{display:flex;justify-content:space-between;gap:8px;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+.card{
+  background:#fffdfa;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;min-height:105px
+}
+.card.open{border-color:var(--bamboo);box-shadow:0 5px 15px #0001}
+.pill{display:inline-block;padding:3px 8px;border-radius:999px;background:#e5ece5;color:var(--bamboo);font-size:.85rem;margin-right:5px}
+.stamp{
+  display:inline-block;border:2px solid var(--red);color:var(--red);padding:6px 10px;font-weight:900;
+  letter-spacing:.08em;transform:rotate(-2deg);margin:8px 0
+}
+.confidence{width:100%}
+.confidenceLabels{display:flex;justify-content:space-between;color:var(--muted);font-size:.82rem}
+.personrow{
+  display:grid;grid-template-columns:90px 1fr 42px;gap:8px;align-items:center;margin:10px 0
+}
+.personrow input{padding:0}
+.casefile{border:1px dashed var(--gold);background:#fff8e9;padding:14px;border-radius:10px}
+hr{border:0;border-top:1px dashed var(--line);margin:18px 0}
+.footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px}
+@media(max-width:580px){.grid{grid-template-columns:1fr}.cover,.sheet{padding:17px}.personrow{grid-template-columns:72px 1fr 36px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="cover" class="cover">
+    <div class="seal">山科特別調查卷宗</div>
+    <h1>竹藪迷案</h1>
+    <p><b>真相不存在的卷宗</b></p>
+    <p class="small">單人劇情推理遊戲</p>
+    <input id="codename" maxlength="20" placeholder="輸入調查官代號" style="margin:8px 0">
+    <h3>你認為查案最重要的是什麼？</h3>
+    <select id="belief">
+      <option value="">請選擇</option>
+      <option>證據</option><option>證詞</option><option>動機</option><option>直覺</option>
+    </select>
+    <div class="row" style="justify-content:center;margin-top:13px">
+      <button id="startBtn">接受調查</button>
+    </div>
+  </section>
+
+  <div id="progress" class="progress hidden">
+    <div class="status"><span id="stageName">序章</span><span id="agentName"></span></div>
+    <div class="progressline"><div id="bar"></div></div>
+  </div>
+
+  <section id="prologue" class="sheet hidden">
+    <div class="seal">序章</div>
+    <h2>任命書</h2>
+    <div class="casefile">
+      <p>山科竹林發現一名男子死亡。</p>
+      <p><b>死者：金澤武弘。</b></p>
+      <p>奇怪的並不是沒有人承認。</p>
+      <p>而是——<b>有三個人，提出了三個不同的死亡版本。</b></p>
+    </div>
+    <p>你的任務不是急著猜兇手，而是判斷：<b>哪些資訊值得相信？你憑什麼相信？</b></p>
+    <button data-next="act1">開啟第一份卷宗</button>
+  </section>
+
+  <section id="act1" class="sheet hidden">
+    <div class="seal">第一幕</div>
+    <h2>現場｜你確定自己知道什麼？</h2>
+    <details class="quote"><summary><b>樵夫</b></summary><p>我在竹林中發現武弘。他已死亡。現場附近有繩子、梳子，草葉凌亂。</p></details>
+    <details class="quote"><summary><b>行腳僧</b></summary><p>前一日晌午，我看見武弘與真砂同行。武弘當時帶著刀、弓與箭。</p></details>
+    <details class="quote"><summary><b>捕吏</b></summary><p>逮捕多襄丸時，他帶著刀、弓、箭，附近還有真砂所騎的馬。</p></details>
+
+    <h3>把資訊放到正確的位置</h3>
+    <div class="evidence">
+      <b>① 武弘已死亡</b>
+      <select class="classify" data-correct="已確認事實"><option>請分類</option><option>已確認事實</option><option>他人證詞</option><option>我的推論</option></select>
+    </div>
+    <div class="evidence">
+      <b>② 行腳僧說武弘前一日帶著弓箭</b>
+      <select class="classify" data-correct="他人證詞"><option>請分類</option><option>已確認事實</option><option>他人證詞</option><option>我的推論</option></select>
+    </div>
+    <div class="evidence">
+      <b>③ 多襄丸就是兇手</b>
+      <select class="classify" data-correct="我的推論"><option>請分類</option><option>已確認事實</option><option>他人證詞</option><option>我的推論</option></select>
+    </div>
+    <div class="evidence">
+      <b>④ 捕吏說多襄丸被捕時持有刀、弓、箭</b>
+      <select class="classify" data-correct="他人證詞"><option>請分類</option><option>已確認事實</option><option>他人證詞</option><option>我的推論</option></select>
+    </div>
+    <button id="check1">封存第一幕判斷</button>
+    <div id="fb1"></div>
+  </section>
+
+  <section id="act2" class="sheet hidden">
+    <div class="seal">第二幕</div>
+    <h2>自白｜三個人都提出了自己的版本</h2>
+    <div class="quote"><span class="pill">多襄丸</span><b>版本 A</b><p>他承認自己造成武弘死亡，並把過程描述成一場正面、勇武的對決。</p></div>
+    <h3>他既然承認，還可能不完全誠實嗎？</h3>
+    <label class="choice"><input type="radio" name="confess" value="no"> 不可能，承認對自己不利的事就代表整份證詞可信</label>
+    <label class="choice"><input type="radio" name="confess" value="yes"> 可能，他仍可能美化自己的勇武、尊嚴或形象</label>
+    <label class="choice"><input type="radio" name="confess" value="unknown"> 無法僅因「承認」判斷整份證詞真偽</label>
+
+    <div class="quote"><span class="pill">真砂</span><b>版本 B</b><p>她描述的死亡過程與多襄丸不同；在她的版本中，武弘當時的狀態也與「公平對決」說法衝突。</p></div>
+    <div class="quote"><span class="pill">武弘</span><b>版本 C</b><p>他的版本再次不同，並提到現場曾留下真砂的小刀。</p></div>
+
+    <h3>哪一組最明顯不能同時成立？</h3>
+    <select id="contradiction">
+      <option value="">請選擇</option>
+      <option value="correct">多襄丸所述的正面對決 vs. 真砂所述武弘當時仍受束縛</option>
+      <option value="x">行腳僧白天遇見夫妻 vs. 樵夫之後發現武弘</option>
+      <option value="y">捕吏看見馬 vs. 行腳僧看見真砂騎馬</option>
+    </select>
+    <h3>你認為多襄丸可能如何塑造自己？</h3>
+    <textarea id="selfImage" placeholder="至少寫一句，例如：即使承認責任，他仍可能希望自己看起來……"></textarea>
+    <button id="check2">建立矛盾網</button>
+    <div id="fb2"></div>
+  </section>
+
+  <section id="act3" class="sheet hidden">
+    <div class="seal">第三幕</div>
+    <h2>物證｜證據會自己說話嗎？</h2>
+    <p>點開四份調查資料。</p>
+    <div class="grid">
+      <div class="card" tabindex="0"><b>① 傷勢摘要</b><div class="inner hidden"><hr><p>現有紀錄只能確認武弘有一處致命傷；單靠這項資訊，無法確定究竟是哪一個死亡版本。</p></div></div>
+      <div class="card" tabindex="0"><b>② 竹林現場</b><div class="inner hidden"><hr><p>草葉凌亂，支持現場曾發生激烈活動，但無法證明某人描述的完整過程。</p></div></div>
+      <div class="card" tabindex="0"><b>③ 消失的小刀</b><div class="inner hidden"><hr><p>真砂與武弘的版本都讓小刀成為重要物件；最早的樵夫證詞卻沒有提到它。</p></div></div>
+      <div class="card" tabindex="0"><b>④ 武器流向</b><div class="inner hidden"><hr><p>多襄丸被捕時持有與武弘相關的武器。這能支持「他曾取得這些物品」，卻不能單獨證明死亡過程。</p></div></div>
+    </div>
+    <h3>「多襄丸持有武弘的武器」最多能證明什麼？</h3>
+    <label class="choice"><input type="radio" name="evidenceLimit" value="a"> 多襄丸一定造成武弘死亡</label>
+    <label class="choice"><input type="radio" name="evidenceLimit" value="b"> 多襄丸曾取得或接觸武弘的物品</label>
+    <label class="choice"><input type="radio" name="evidenceLimit" value="c"> 武弘主動把武器送給多襄丸</label>
+    <h3>未解物證：小刀去哪裡了？</h3>
+    <textarea id="knife" placeholder="提出一個可能解釋，也可以寫「目前無法確定」，但請說明原因。"></textarea>
+    <button id="check3">完成物證分析</button>
+    <div id="fb3"></div>
+  </section>
+
+  <section id="credibility" class="sheet hidden">
+    <div class="seal">調查中間紀錄</div>
+    <h2>此刻，你相信誰？</h2>
+    <p>0＝幾乎不可信；100＝非常可信。沒有標準答案。</p>
+    <div class="personrow"><b>樵夫</b><input class="cred" data-person="樵夫" type="range" min="0" max="100" value="70"><span>70</span></div>
+    <div class="personrow"><b>多襄丸</b><input class="cred" data-person="多襄丸" type="range" min="0" max="100" value="50"><span>50</span></div>
+    <div class="personrow"><b>真砂</b><input class="cred" data-person="真砂" type="range" min="0" max="100" value="50"><span>50</span></div>
+    <div class="personrow"><b>武弘</b><input class="cred" data-person="武弘" type="range" min="0" max="100" value="50"><span>50</span></div>
+    <button id="saveCred">封存可信度</button>
+  </section>
+
+  <section id="act4" class="sheet hidden">
+    <div class="seal">第四幕</div>
+    <h2>審判｜請為你的判斷負責</h2>
+    <p>遊戲不會公布「標準兇手」。你的任務是提出目前最能被證據支持的判斷。</p>
+    <select id="verdict">
+      <option value="">請選擇</option>
+      <option>A. 多襄丸造成武弘死亡</option>
+      <option>B. 真砂造成武弘死亡</option>
+      <option>C. 武弘自己造成死亡</option>
+      <option>D. 現有證據不足，無法判定</option>
+    </select>
+    <h3>三項支持依據</h3>
+    <textarea id="supports" placeholder="請至少列三點，建議分行。"></textarea>
+    <h3>兩項反證或未解疑點</h3>
+    <textarea id="doubts" placeholder="請至少列兩點，建議分行。"></textarea>
+    <h3>你對這個判決有多確定？</h3>
+    <input id="confidence1" class="confidence" type="range" min="0" max="100" value="60">
+    <div class="confidenceLabels"><span>0% 很不確定</span><b id="conf1Value">60%</b><span>100% 非常確定</span></div>
+    <button id="submitVerdict" class="red">提交最終判決</button>
+    <div id="fb4"></div>
+  </section>
+
+  <section id="twist" class="sheet hidden">
+    <div class="seal">未登錄卷宗</div>
+    <h2>樵夫的沉默</h2>
+    <div class="note">
+      重新檢查：武弘的版本讓「小刀」留在現場成為可能；然而最早發現現場的樵夫，卻沒有提到這件物品。
+    </div>
+    <p><b>如果這個缺口成立，你還能把樵夫視為完全中立、完全可靠的觀察者嗎？</b></p>
+    <select id="woodcutter">
+      <option value="">請選擇</option>
+      <option>仍然相信，這不足以動搖他的證詞</option>
+      <option>降低可信度，他可能有所隱瞞</option>
+      <option>無法判斷，但我會重新檢查他的證詞</option>
+    </select>
+    <h3>看完最後卷宗，你現在有多確定？</h3>
+    <input id="confidence2" class="confidence" type="range" min="0" max="100" value="50">
+    <div class="confidenceLabels"><span>0%</span><b id="conf2Value">50%</b><span>100%</span></div>
+    <button id="reopen">重新封存判決</button>
+  </section>
+
+  <section id="ending" class="sheet hidden">
+    <div class="seal">終章</div>
+    <h2>調查官手記</h2>
+    <div id="mirror" class="casefile"></div>
+    <h3>經過這次調查，你還同意遊戲開始時的自己嗎？</h3>
+    <textarea id="reflection" placeholder="50～100字：你現在認為『可信』與『真實』之間有什麼差別？"></textarea>
+    <button id="finish">正式結案</button>
+    <div id="finalResult"></div>
+  </section>
+
+  <section id="certificate" class="cover hidden">
+    <div class="seal">案件結束</div>
+    <h2>如果每個人都說了「自己的真話」，真相在哪裡？</h2>
+    <p>你完成的不是「猜中兇手」，而是一場關於證據、敘事與相信的調查。</p>
+    <div class="row" style="justify-content:center">
+      <button id="exportBtn" class="secondary">匯出調查紀錄</button>
+      <button id="restartBtn" class="secondary">重新開始</button>
+    </div>
+  </section>
+
+  <div class="footer">《竹藪迷案》單機版｜所有紀錄只保存在這個瀏覽器中，不需 Firebase、不需後端。</div>
+</div>
+
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const state=JSON.parse(localStorage.getItem("inAGroveSolo")||'{"stage":0,"answers":{},"credibility":{}}');
+function save(){localStorage.setItem("inAGroveSolo",JSON.stringify(state))}
+function show(id){$(id).classList.remove("hidden");$(id).scrollIntoView({behavior:"smooth",block:"start"})}
+function setStage(n,name){
+  state.stage=Math.max(state.stage,n); save();
+  $("bar").style.width=(Math.min(n,7)/7*100)+"%";
+  $("stageName").textContent=name;
+}
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function lines(s){return s.split(/\n+/).map(x=>x.trim()).filter(Boolean).length}
+
+$("startBtn").addEventListener("click",()=>{
+  const name=$("codename").value.trim(),belief=$("belief").value;
+  if(!name||!belief){alert("請輸入調查官代號並選擇你目前最重視的查案依據。");return}
+  state.name=name;state.belief=belief;state.stage=1;save();
+  $("cover").classList.add("hidden");$("progress").classList.remove("hidden");
+  $("agentName").textContent="調查官："+name;setStage(1,"序章");show("prologue");
+});
+document.querySelector('[data-next="act1"]').addEventListener("click",()=>{setStage(2,"第一幕");show("act1")});
+
+$("check1").addEventListener("click",()=>{
+  const sels=[...document.querySelectorAll(".classify")];
+  if(sels.some(s=>s.value==="請分類")){alert("請先完成四項分類。");return}
+  const wrong=sels.filter(s=>s.value!==s.dataset.correct).length;
+  if(wrong){$("fb1").innerHTML='<div class="feedback warn">有 '+wrong+' 項需要再想想。尤其注意：「有人這樣說」不等於「事情已被客觀證實」。</div>';return}
+  state.answers.act1="完成事實／證詞／推論分類";save();
+  $("fb1").innerHTML='<div class="feedback"><span class="stamp">事實 ≠ 證詞</span><br>第一幕完成。你開始知道「讀到一句話」和「證實一件事」並不相同。</div>';
+  setTimeout(()=>{setStage(3,"第二幕");show("act2")},650);
+});
+
+$("check2").addEventListener("click",()=>{
+  const confess=document.querySelector('input[name="confess"]:checked');
+  const contradiction=$("contradiction").value,self=$("selfImage").value.trim();
+  if(!confess||!contradiction){alert("請完成兩項判斷。");return}
+  if(confess.value==="no"||contradiction!=="correct"){
+    $("fb2").innerHTML='<div class="feedback warn">再檢查：承認對自己不利的事，不代表敘述中的每個細節都必然可靠。</div>';return
+  }
+  if(self.length<10){alert("請再多寫一點多襄丸可能如何塑造自己的形象。");return}
+  state.answers.act2={confess:confess.value,selfImage:self};save();
+  $("fb2").innerHTML='<div class="feedback"><span class="stamp">自白 ≠ 真相</span><br>一個人可以承認某件事，同時仍重新安排故事中的自己。</div>';
+  setTimeout(()=>{setStage(4,"第三幕");show("act3")},650);
+});
+
+document.querySelectorAll(".card").forEach(card=>{
+  const flip=()=>{card.classList.toggle("open");card.querySelector(".inner").classList.toggle("hidden")};
+  card.addEventListener("click",flip);
+  card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();flip()}});
+});
+
+$("check3").addEventListener("click",()=>{
+  const ev=document.querySelector('input[name="evidenceLimit"]:checked'),knife=$("knife").value.trim();
+  if(!ev){alert("請先回答物證能證明到哪裡。");return}
+  if(ev.value!=="b"){$("fb3").innerHTML='<div class="feedback warn">證據有邊界。「持有某物」能直接證明的，通常比「因此一定發生某件事」少。</div>';return}
+  if(knife.length<8){alert("請留下你對小刀去向的推測或無法判定的理由。");return}
+  state.answers.act3={knife};save();
+  $("fb3").innerHTML='<div class="feedback"><span class="stamp">證據 ≠ 故事</span><br>物證能限制故事，但不能替我們自動補完故事。</div>';
+  setTimeout(()=>{show("credibility")},650);
+});
+
+document.querySelectorAll(".cred").forEach(r=>{
+  const out=r.nextElementSibling;
+  r.addEventListener("input",()=>out.textContent=r.value);
+});
+$("saveCred").addEventListener("click",()=>{
+  document.querySelectorAll(".cred").forEach(r=>state.credibility[r.dataset.person]=Number(r.value));
+  save();setStage(5,"第四幕");show("act4");
+});
+
+$("confidence1").addEventListener("input",()=>$("conf1Value").textContent=$("confidence1").value+"%");
+$("confidence2").addEventListener("input",()=>$("conf2Value").textContent=$("confidence2").value+"%");
+
+$("submitVerdict").addEventListener("click",()=>{
+  const v=$("verdict").value,s=$("supports").value.trim(),d=$("doubts").value.trim();
+  if(!v){alert("請選擇目前的判決。");return}
+  if(lines(s)<3){alert("請列出至少三項支持依據，建議每點換行。");return}
+  if(lines(d)<2){alert("請列出至少兩項反證或未解疑點。");return}
+  state.answers.verdict={choice:v,supports:s,doubts:d,confidenceBefore:Number($("confidence1").value)};save();
+  $("fb4").innerHTML='<div class="feedback">判決已提交。正在封存……<br><b>警告：發現一份未登錄卷宗。</b></div>';
+  setTimeout(()=>{setStage(6,"未登錄卷宗");show("twist")},900);
+});
+
+$("reopen").addEventListener("click",()=>{
+  if(!$("woodcutter").value){alert("請先重新評估樵夫證詞。");return}
+  state.answers.woodcutter=$("woodcutter").value;
+  state.answers.verdict.confidenceAfter=Number($("confidence2").value);save();
+  const before=state.answers.verdict.confidenceBefore,after=state.answers.verdict.confidenceAfter;
+  $("mirror").innerHTML=
+    '遊戲開始時，你說：<b>「查案最重要的是'+esc(state.belief)+'。」</b><br><br>'+
+    '你提交的判決是：<b>'+esc(state.answers.verdict.choice)+'</b><br>'+
+    '最後卷宗出現前，你的信心是 <b>'+before+'%</b>；重新檢查後是 <b>'+after+'%</b>。';
+  setStage(7,"終章");show("ending");
+});
+
+$("finish").addEventListener("click",()=>{
+  const r=$("reflection").value.trim();
+  if(r.length<30){alert("請至少寫約30字，讓這份調查官手記真正留下你的思考。");return}
+  state.answers.reflection=r;save();
+  $("finalResult").innerHTML='<div class="feedback">調查官手記已封存。你完成了案件，但案件沒有替你保證一個唯一答案。</div>';
+  show("certificate");
+});
+
+$("exportBtn").addEventListener("click",()=>{
+  const a=state.answers,v=a.verdict||{};
+  const cred=Object.entries(state.credibility||{}).map(([k,val])=>k+"："+val).join("\n");
+  const text=`《竹藪迷案》單人調查紀錄
+調查官：${state.name||""}
+起始信念：查案最重要的是「${state.belief||""}」
+
+【第二幕｜自我形象】
+${a.act2?.selfImage||""}
+
+【第三幕｜小刀去向推測】
+${a.act3?.knife||""}
+
+【中途可信度】
+${cred}
+
+【最終判決】
+${v.choice||""}
+
+【三項支持依據】
+${v.supports||""}
+
+【反證／未解疑點】
+${v.doubts||""}
+
+【判決信心】
+最後卷宗前：${v.confidenceBefore??""}%
+重新檢查後：${v.confidenceAfter??""}%
+
+【對樵夫的重新評估】
+${a.woodcutter||""}
+
+【調查官手記】
+${a.reflection||""}
+`;
+  const blob=new Blob([text],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=url;link.download=`竹藪迷案_${state.name||"調查官"}.txt`;link.click();URL.revokeObjectURL(url);
+});
+$("restartBtn").addEventListener("click",()=>{
+  if(confirm("確定清除這台裝置上的遊戲紀錄並重新開始？")){
+    localStorage.removeItem("inAGroveSolo");location.reload();
+  }
+});
+
+if(state.name){
+  $("codename").value=state.name||"";
+  $("belief").value=state.belief||"";
+}
+})();
+</script>
+</body>
+</html>
